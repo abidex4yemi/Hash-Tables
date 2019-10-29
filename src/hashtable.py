@@ -9,25 +9,22 @@ class LinkedPair:
         self.value = value
         self.next = None
 
+    def __str__(self):
+        return "<Node: (%s, %s), next: %s>" % (self.key, self.value, self.next)
+
 
 class HashTable:
-    def __init__(self, size):
-        self.capacity = 25
+    def __init__(self, capacity):
+        self.capacity = capacity
         self.size = 0
         self.storage = [None] * self.capacity
 
     def _hash(self, key):
-        hashsum = 0
-        # For each character in the key
+        sum = 0
+        for pos in range(len(key)):
+            sum = sum + ord(key[pos])
 
-        for idx, c in enumerate(key):
-            # Add (index + length of key) ^ (current char code)
-
-            hashsum += (idx + len(key)) ** ord(c)
-            # Perform modulus to keep hashsum in range [0, self.capacity - 1]
-
-            hashsum = hashsum % self.capacity
-        return hashsum
+        return sum % self.capacity
 
     def _hash_djb2(self, key):
         pass
@@ -36,92 +33,73 @@ class HashTable:
         return self._hash(key) % self.capacity
 
     def insert(self, key, value):
-        # 1. Increment size
-
         self.size += 1
-        # 2. Compute index of key
 
         index = self._hash(key)
-        # Go to the node corresponding to the hash
 
         node = self.storage[index]
-        # 3. If bucket is empty:
 
         if node is None:
-            # Create node, add it, return
-
             self.storage[index] = LinkedPair(key, value)
             return
-        # 4. Collision! Iterate to the end of the linked list at provided index
 
         prev = node
         while node is not None:
+            if prev.key == key:
+                prev.value = value
             prev = node
             node = node.next
-        # Add a new node at the end of the list with provided key/value
 
         prev.next = LinkedPair(key, value)
 
     def remove(self, key):
-        # 1. Compute hash
-
         index = self._hash(key)
         node = self.storage[index]
         prev = None
-        # 2. Iterate to the requested node
 
         while node is not None and node.key != key:
             prev = node
             node = node.next
-        # Now, node is either the requested node or none
 
         if node is None:
-            # 3. Key not found
-
             return None
         else:
-            # 4. The key was found.
-
             self.size -= 1
             result = node.value
-            # Delete this element in linked list
 
             if prev is None:
                 node = None
             else:
                 prev.next = prev.next.next
-            # Return the deleted language
 
             return result
 
     def retrieve(self, key):
-        # 1. Compute hash
-
         index = self._hash(key)
-        # 2. Go to first node in list at bucket
 
         node = self.storage[index]
-        # 3. Traverse the linked list at this node
 
         while node is not None and node.key != key:
             node = node.next
-        # 4. Now, node is the requested key/value pair or None
 
         if node is None:
-            # Not found
-
             return None
         else:
-            # Found - return the data value
-
             return node.value
 
     def resize(self):
-        pass
+        self.capacity *= 2
+
+        old_storage_content = self.storage
+
+        self.storage = [None] * self.capacity
+        for node in old_storage_content:
+            if node:
+                self.insert(node.key, node.value)
 
 
 if __name__ == "__main__":
-    ht = HashTable(2)
+    ht = HashTable(3)
 
     ht.insert("line_1", "Tiny hash table")
     ht.insert("line_2", "Filled beyond capacity")
