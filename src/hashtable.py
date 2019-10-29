@@ -11,75 +11,112 @@ class LinkedPair:
 
 
 class HashTable:
-    '''
-    A hash table that with `capacity` buckets
-    that accepts string keys
-    '''
-
-    def __init__(self, capacity):
-        self.capacity = capacity  # Number of buckets in the hash table
-        self.storage = [None] * capacity
+    def __init__(self, size):
+        self.capacity = 25
+        self.size = 0
+        self.storage = [None] * self.capacity
 
     def _hash(self, key):
-        '''
-        Hash an arbitrary key and return an integer.
+        hashsum = 0
+        # For each character in the key
 
-        You may replace the Python hash with DJB2 as a stretch goal.
-        '''
-        return hash(key)
+        for idx, c in enumerate(key):
+            # Add (index + length of key) ^ (current char code)
+
+            hashsum += (idx + len(key)) ** ord(c)
+            # Perform modulus to keep hashsum in range [0, self.capacity - 1]
+
+            hashsum = hashsum % self.capacity
+        return hashsum
 
     def _hash_djb2(self, key):
-        '''
-        Hash an arbitrary key using DJB2 hash
-
-        OPTIONAL STRETCH: Research and implement DJB2
-        '''
         pass
 
     def _hash_mod(self, key):
-        '''
-        Take an arbitrary key and return a valid integer index
-        within the storage capacity of the hash table.
-        '''
         return self._hash(key) % self.capacity
 
     def insert(self, key, value):
-        '''
-        Store the value with the given key.
+        # 1. Increment size
 
-        Hash collisions should be handled with Linked List Chaining.
+        self.size += 1
+        # 2. Compute index of key
 
-        Fill this in.
-        '''
-        pass
+        index = self._hash(key)
+        # Go to the node corresponding to the hash
+
+        node = self.storage[index]
+        # 3. If bucket is empty:
+
+        if node is None:
+            # Create node, add it, return
+
+            self.storage[index] = LinkedPair(key, value)
+            return
+        # 4. Collision! Iterate to the end of the linked list at provided index
+
+        prev = node
+        while node is not None:
+            prev = node
+            node = node.next
+        # Add a new node at the end of the list with provided key/value
+
+        prev.next = LinkedPair(key, value)
 
     def remove(self, key):
-        '''
-        Remove the value stored with the given key.
+        # 1. Compute hash
 
-        Print a warning if the key is not found.
+        index = self._hash(key)
+        node = self.storage[index]
+        prev = None
+        # 2. Iterate to the requested node
 
-        Fill this in.
-        '''
-        pass
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+        # Now, node is either the requested node or none
+
+        if node is None:
+            # 3. Key not found
+
+            return None
+        else:
+            # 4. The key was found.
+
+            self.size -= 1
+            result = node.value
+            # Delete this element in linked list
+
+            if prev is None:
+                node = None
+            else:
+                prev.next = prev.next.next
+            # Return the deleted language
+
+            return result
 
     def retrieve(self, key):
-        '''
-        Retrieve the value stored with the given key.
+        # 1. Compute hash
 
-        Returns None if the key is not found.
+        index = self._hash(key)
+        # 2. Go to first node in list at bucket
 
-        Fill this in.
-        '''
-        pass
+        node = self.storage[index]
+        # 3. Traverse the linked list at this node
+
+        while node is not None and node.key != key:
+            node = node.next
+        # 4. Now, node is the requested key/value pair or None
+
+        if node is None:
+            # Not found
+
+            return None
+        else:
+            # Found - return the data value
+
+            return node.value
 
     def resize(self):
-        '''
-        Doubles the capacity of the hash table and
-        rehash all key/value pairs.
-
-        Fill this in.
-        '''
         pass
 
 
