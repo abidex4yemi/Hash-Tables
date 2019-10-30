@@ -54,7 +54,9 @@ class HashTable:
 
     def remove(self, key):
         index = self._hash(key)
+
         node = self.storage[index]
+
         prev = None
 
         while node is not None and node.key != key:
@@ -68,11 +70,9 @@ class HashTable:
             result = node.value
 
             if prev is None:
-                node = None
+                self.storage[index] = node.next
             else:
-                prev.next = prev.next.next
-
-            return result
+                prev.next = node.next
 
     def retrieve(self, key):
         index = self._hash(key)
@@ -94,8 +94,10 @@ class HashTable:
 
         self.storage = [None] * self.capacity
         for node in old_storage_content:
-            if node:
-                self.insert(node.key, node.value)
+            current_node = node
+            while current_node:
+                self.insert(current_node.key, current_node.value)
+                current_node = current_node.next
 
 
 if __name__ == "__main__":
