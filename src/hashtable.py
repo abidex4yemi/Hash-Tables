@@ -1,95 +1,107 @@
 # '''
 # Linked List hash table key/value pair
 # '''
+
+
 class LinkedPair:
     def __init__(self, key, value):
         self.key = key
         self.value = value
         self.next = None
 
-class HashTable:
-    '''
-    A hash table that with `capacity` buckets
-    that accepts string keys
-    '''
-    def __init__(self, capacity):
-        self.capacity = capacity  # Number of buckets in the hash table
-        self.storage = [None] * capacity
+    def __str__(self):
+        return "<Node: (%s, %s), next: %s>" % (self.key, self.value, self.next)
 
+
+class HashTable:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.size = 0
+        self.storage = [None] * self.capacity
 
     def _hash(self, key):
-        '''
-        Hash an arbitrary key and return an integer.
+        sum = 0
+        for pos in range(len(key)):
+            sum = sum + ord(key[pos])
 
-        You may replace the Python hash with DJB2 as a stretch goal.
-        '''
-        return hash(key)
-
+        return sum % self.capacity
 
     def _hash_djb2(self, key):
-        '''
-        Hash an arbitrary key using DJB2 hash
-
-        OPTIONAL STRETCH: Research and implement DJB2
-        '''
         pass
-
 
     def _hash_mod(self, key):
-        '''
-        Take an arbitrary key and return a valid integer index
-        within the storage capacity of the hash table.
-        '''
         return self._hash(key) % self.capacity
 
-
     def insert(self, key, value):
-        '''
-        Store the value with the given key.
+        self.size += 1
 
-        Hash collisions should be handled with Linked List Chaining.
+        index = self._hash(key)
 
-        Fill this in.
-        '''
-        pass
+        node = self.storage[index]
 
+        if node is None:
+            self.storage[index] = LinkedPair(key, value)
+            return
 
+        prev = node
+        while node is not None:
+            if prev.key == key:
+                prev.value = value
+            prev = node
+            node = node.next
+
+        prev.next = LinkedPair(key, value)
 
     def remove(self, key):
-        '''
-        Remove the value stored with the given key.
+        index = self._hash(key)
 
-        Print a warning if the key is not found.
+        node = self.storage[index]
 
-        Fill this in.
-        '''
-        pass
+        prev = None
 
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+
+        if node is None:
+            return None
+        else:
+            self.size -= 1
+            result = node.value
+
+            if prev is None:
+                self.storage[index] = node.next
+            else:
+                prev.next = node.next
 
     def retrieve(self, key):
-        '''
-        Retrieve the value stored with the given key.
+        index = self._hash(key)
 
-        Returns None if the key is not found.
+        node = self.storage[index]
 
-        Fill this in.
-        '''
-        pass
+        while node is not None and node.key != key:
+            node = node.next
 
+        if node is None:
+            return None
+        else:
+            return node.value
 
     def resize(self):
-        '''
-        Doubles the capacity of the hash table and
-        rehash all key/value pairs.
+        self.capacity *= 2
 
-        Fill this in.
-        '''
-        pass
+        old_storage_content = self.storage
 
+        self.storage = [None] * self.capacity
+        for node in old_storage_content:
+            current_node = node
+            while current_node:
+                self.insert(current_node.key, current_node.value)
+                current_node = current_node.next
 
 
 if __name__ == "__main__":
-    ht = HashTable(2)
+    ht = HashTable(3)
 
     ht.insert("line_1", "Tiny hash table")
     ht.insert("line_2", "Filled beyond capacity")
